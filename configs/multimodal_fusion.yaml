@@ -9,7 +9,6 @@ run:
   mode: process
 
 dataset:
-  root: /home/reza/Documents/SampleIntegrationData
   subject: MP301
   days: all
   trials: all
@@ -44,7 +43,7 @@ sources:
 models:
   - id: hd_emg
     type: torch
-    checkpoint:  /home/reza/Documents/SampleIntegrationData/HD_EMG/CustomResNet_Day_1-Day_2-Day_3-Day_7_20260614_132709/100
+    checkpoint: ${SWAG_MODELS_ROOT}/HD_EMG/CustomResNet_Day_1-Day_2-Day_3-Day_7_20260614_132709/100
     activities: [1, 2, 2.1, 3, 4]
     inputs: [hd_emg]
     window: { window_size: 100, hop: 95 }
@@ -53,7 +52,7 @@ models:
 
   - id: imu
     type: torch
-    checkpoint: /home/reza/Documents/SampleIntegrationData/IMU/CustomResNet_Day_2-Day_3-Day_7_AllSubjects_20251223_000754/100
+    checkpoint: ${SWAG_MODELS_ROOT}/IMU/CustomResNet_Day_2-Day_3-Day_7_AllSubjects_20251223_000754/100
     activities: [1, 2, 2.1, 3, 4]
     inputs: [imu_gyr]
     window: { window_size: 100, hop: 95 }
@@ -62,7 +61,7 @@ models:
 
   - id: bp_emg
     type: torch                # EMGCNN + feature extraction (auto from params.json)
-    checkpoint: /home/reza/Documents/SampleIntegrationData/Bipolar/EMGCNN_Day_2-Day_3-Day_7_AllSubjects_20251222_134153/100
+    checkpoint: ${SWAG_MODELS_ROOT}/Bipolar/EMGCNN_Day_2-Day_3-Day_7_AllSubjects_20251222_134153/100
     activities: [1, 2, 2.1, 3, 4]
     inputs: [bp_emg]
     window: { window_size: 100, hop: 95 }

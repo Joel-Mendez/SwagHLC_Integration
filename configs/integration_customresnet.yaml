@@ -9,7 +9,6 @@ run:
   mode: process
 
 dataset:
-  root: /home/reza/Documents/SampleIntegrationData
   subject: MP301              # the subject this checkpoint was evaluated on
   days: all
   trials: all
@@ -30,7 +29,7 @@ models:
     type: torch
     arch: CustomResNet        # optional — auto-read from the checkpoint's params.json
     # Point at the .pth OR the run dir (the .pth + params.json are auto-discovered):
-    checkpoint: /home/reza/Documents/SampleIntegrationData/HD_EMG/CustomResNet_Day_1-Day_2-Day_3-Day_7_20260614_132709/100
+    checkpoint: ${SWAG_MODELS_ROOT}/HD_EMG/CustomResNet_Day_1-Day_2-Day_3-Day_7_20260614_132709/100
     active: true
     activities: [1, 2, 2.1, 3, 4]   # -> num_classes=5, class index order matches training
     inputs: [hd_emg]

@@ -9,6 +9,7 @@ inference models.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
@@ -175,7 +176,7 @@ def _window_from(d: dict[str, Any] | None) -> WindowConfig:
 
 
 def load_config(path: str | Path) -> AppConfig:
-    raw = yaml.safe_load(Path(path).read_text()) or {}
+    raw = yaml.safe_load(os.path.expandvars(Path(path).read_text())) or {}
 
     t = raw.get("transport", {}) or {}
     transport = TransportConfig(kind=t.get("kind", "inproc"), options=t.get("options", {}) or {})

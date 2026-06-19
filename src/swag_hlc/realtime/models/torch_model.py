@@ -65,19 +65,78 @@ def resolve_checkpoint(path: str) -> tuple[str, dict]:
 
 def _build_custom_resnet(num_classes: int, meta: dict):
     """Mirror of BioActLab models/custom_models.py CustomResNet (weights=None:
-    we load trained weights, so no pretrained download is needed)."""
+    we load trained weights, so no pretrained download is needed).
+
+    resnet18 is inlined in pure torch.nn to avoid a torchvision dependency.
+    Module names match torchvision's exactly so checkpoint state_dicts load
+    without remapping.
+    """
+    import torch
     import torch.nn as nn
-    from torchvision.models import resnet18
+
+    def _conv3x3(in_planes, out_planes, stride=1):
+        return nn.Conv2d(in_planes, out_planes, 3, stride=stride, padding=1, bias=False)
+
+    def _conv1x1(in_planes, out_planes, stride=1):
+        return nn.Conv2d(in_planes, out_planes, 1, stride=stride, bias=False)
+
+    class BasicBlock(nn.Module):
+        def __init__(self, inplanes, planes, stride=1, downsample=None):
+            super().__init__()
+            self.conv1 = _conv3x3(inplanes, planes, stride)
+            self.bn1 = nn.BatchNorm2d(planes)
+            self.relu = nn.ReLU(inplace=True)
+            self.conv2 = _conv3x3(planes, planes)
+            self.bn2 = nn.BatchNorm2d(planes)
+            self.downsample = downsample
+
+        def forward(self, x):
+            identity = x
+            out = self.relu(self.bn1(self.conv1(x)))
+            out = self.bn2(self.conv2(out))
+            if self.downsample is not None:
+                identity = self.downsample(x)
+            return self.relu(out + identity)
+
+    class ResNet18(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
+            self.bn1 = nn.BatchNorm2d(64)
+            self.relu = nn.ReLU(inplace=True)
+            self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+            self.layer1 = self._make_layer(64, 64, 2)
+            self.layer2 = self._make_layer(64, 128, 2, stride=2)
+            self.layer3 = self._make_layer(128, 256, 2, stride=2)
+            self.layer4 = self._make_layer(256, 512, 2, stride=2)
+            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+            self.fc = nn.Linear(512, 1000)
+
+        def _make_layer(self, inplanes, planes, blocks, stride=1):
+            downsample = None
+            if stride != 1 or inplanes != planes:
+                downsample = nn.Sequential(
+                    _conv1x1(inplanes, planes, stride),
+                    nn.BatchNorm2d(planes),
+                )
+            layers = [BasicBlock(inplanes, planes, stride, downsample)]
+            for _ in range(1, blocks):
+                layers.append(BasicBlock(planes, planes))
+            return nn.Sequential(*layers)
+
+        def forward(self, x):
+            x = self.maxpool(self.relu(self.bn1(self.conv1(x))))
+            x = self.layer4(self.layer3(self.layer2(self.layer1(x))))
+            return self.fc(torch.flatten(self.avgpool(x), 1))
 
     class CustomResNet(nn.Module):
         def __init__(self, num_classes):
             super().__init__()
-            dropout_rate = 0.01
-            self.resnet = resnet18(weights=None)
+            self.resnet = ResNet18()
             self.resnet.conv1 = nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=1, bias=False)
             num_features = self.resnet.fc.in_features
             self.resnet.fc = nn.Identity()
-            self.dropout = nn.Dropout(p=dropout_rate)
+            self.dropout = nn.Dropout(p=0.01)
             self.fc = nn.Linear(num_features, num_classes)
 
         def forward(self, x):

@@ -37,6 +37,16 @@ python3 -m venv .venv
 .venv/bin/pip install -e ".[torch,dev]"
 ```
 
+> **Jetson (JetPack 6 / L4T R36):** the standard PyTorch wheel from PyPI targets
+> CUDA 13.0 and will not use the GPU on Jetson (CUDA 12.6). Install the
+> Jetson-specific wheel first, then install without the `torch` extra so pip
+> does not overwrite it:
+>
+> ```bash
+> .venv/bin/pip install https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
+> .venv/bin/pip install -e ".[dev]"
+> ```
+
 > If you prefer to install from the flat requirements file instead:
 > ```bash
 > .venv/bin/pip install -r requirements.txt
