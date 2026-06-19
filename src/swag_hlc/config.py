@@ -43,7 +43,7 @@ class RunConfig:
 class DatasetConfig:
     """Default RRD selection that sources inherit unless they override it."""
 
-    root: str = "/vol/storage/common/SWAG/RRD"
+    root: str | None = None
     subject: str = "MP201"  # MP2xx+ have HD-EMG; MP1xx are bipolar+IMU only
     days: Any = "all"  # "all" | [Day_1, ...] | [1, 2]
     trials: Any = "all"  # "all" | [Trial_01, ...] | [1, 2, 3]
@@ -189,7 +189,7 @@ def load_config(path: str | Path) -> AppConfig:
 
     d = raw.get("dataset", {}) or {}
     dataset = DatasetConfig(
-        root=d.get("root", DatasetConfig.root),
+        root=d.get("root"),
         subject=d.get("subject", DatasetConfig.subject),
         days=d.get("days", "all"),
         trials=d.get("trials", "all"),
