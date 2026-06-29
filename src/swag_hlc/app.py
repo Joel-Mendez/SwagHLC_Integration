@@ -28,7 +28,7 @@ from swag_hlc.transport import build_transport
 from swag_hlc.transport.base import Subscriber
 
 # Suppress per-prediction streaming lines (set True by the latency benchmark).
-QUIET = False
+QUIET = True
 
 
 # --------------------------------------------------------------------------- #
