@@ -66,6 +66,9 @@ class Ros2Transport(Transport):
         rclpy = _require_rclpy()
         rclpy.init()
         self._node = rclpy.create_node("swag_hlc")
+        # Live SWAG board data (cache + 1 Hz status only; inference still uses the RRD replay)
+        from swag_hlc.transport.live_sensors import LiveSensorCache
+        self.live = LiveSensorCache(self._node)
         self._spin_thread = threading.Thread(
             target=lambda: rclpy.spin(self._node), daemon=True
         )
