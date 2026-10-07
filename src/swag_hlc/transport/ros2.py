@@ -72,25 +72,6 @@ class Ros2Transport(Transport):
         self._spin_thread.start()
         print(f"[Ros2Transport] node 'swag_hlc' ready, intent → /{namespace}/intent/*")
 
-        # Hip kinematics from MLC — printout only, not used by inference pipeline
-        self._hip_last_print = 0.0
-        from std_msgs.msg import Float32MultiArray
-        self._node.create_subscription(
-            Float32MultiArray,
-            f"/{namespace}/sensor/hip_joints",
-            self._on_hip_joints,
-            10,
-        )
-
-    def _on_hip_joints(self, msg) -> None:
-        now = time.monotonic()
-        if now - self._hip_last_print < 1.0:
-            return
-        self._hip_last_print = now
-        d = msg.data
-        if len(d) >= 4:
-            print(f"[hip_joints] angle_r={d[0]:.3f} angle_l={d[1]:.3f} vel_r={d[2]:.3f} vel_l={d[3]:.3f}")
-
     def _ros_topic(self, topic: str) -> str:
         return f"/{self._ns}/{topic}" if self._ns else f"/{topic}"
 
